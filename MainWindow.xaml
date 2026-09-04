@@ -17,7 +17,8 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="38" />
                 <RowDefinition x:Name="CaptureRow" Height="*" />
-                <RowDefinition x:Name="ResultRow" Height="132" />
+                <RowDefinition x:Name="SplitterRow" Height="8" />
+                <RowDefinition x:Name="ResultRow" Height="220" />
             </Grid.RowDefinitions>
 
             <Border Grid.Row="0" Background="#E610172A" CornerRadius="6,6,0,0" MouseLeftButtonDown="TitleBar_MouseLeftButtonDown">
@@ -59,17 +60,74 @@
                 </StackPanel>
             </Grid>
 
-            <Border x:Name="ResultPanel" Grid.Row="2" Background="#EB020617" BorderBrush="#334155" BorderThickness="0,1,0,0" CornerRadius="0,0,6,6">
+            <GridSplitter x:Name="ResultSplitter"
+                          Grid.Row="2"
+                          Height="8"
+                          HorizontalAlignment="Stretch"
+                          VerticalAlignment="Stretch"
+                          Background="#CC334155"
+                          Cursor="SizeNS"
+                          ResizeDirection="Rows"
+                          ResizeBehavior="PreviousAndNext"
+                          ShowsPreview="True"
+                          ToolTip="ドラッグして翻訳領域の高さを変更" />
+
+            <Border x:Name="ResultPanel" Grid.Row="3" MinHeight="150" Background="#EB020617" CornerRadius="0,0,6,6">
                 <Grid Margin="14,10,14,12">
                     <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
                     <TextBlock x:Name="StatusText" Text="準備完了" Foreground="#67E8F9" FontSize="11" Margin="0,0,0,5" />
-                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-                        <TextBlock x:Name="TranslationText" Text="翻訳結果がここに表示されます。"
-                                   Foreground="White" FontSize="20" TextWrapping="Wrap" />
-                    </ScrollViewer>
+
+                    <Border x:Name="SourcePanel"
+                            Grid.Row="1"
+                            MaxHeight="110"
+                            Margin="0,0,0,8"
+                            Padding="8,6,8,8"
+                            Background="#991E293B"
+                            BorderBrush="#475569"
+                            BorderThickness="1"
+                            CornerRadius="4"
+                            Visibility="Collapsed">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <TextBlock Text="原文" Foreground="#94A3B8" FontSize="11" Margin="0,0,0,3" />
+                            <TextBox x:Name="SourceText"
+                                     Grid.Row="1"
+                                     MaxHeight="72"
+                                     IsReadOnly="True"
+                                     IsReadOnlyCaretVisible="False"
+                                     AcceptsReturn="True"
+                                     TextWrapping="Wrap"
+                                     VerticalScrollBarVisibility="Auto"
+                                     HorizontalScrollBarVisibility="Disabled"
+                                     Background="Transparent"
+                                     BorderThickness="0"
+                                     Padding="0"
+                                     Foreground="#E2E8F0"
+                                     FontSize="14" />
+                        </Grid>
+                    </Border>
+
+                    <TextBox x:Name="TranslationText"
+                             Grid.Row="2"
+                             Text="翻訳結果がここに表示されます。"
+                             IsReadOnly="True"
+                             IsReadOnlyCaretVisible="False"
+                             AcceptsReturn="True"
+                             TextWrapping="Wrap"
+                             VerticalScrollBarVisibility="Auto"
+                             HorizontalScrollBarVisibility="Disabled"
+                             Background="Transparent"
+                             BorderThickness="0"
+                             Padding="0"
+                             Foreground="White"
+                             FontSize="20" />
                 </Grid>
             </Border>
         </Grid>

@@ -12,6 +12,7 @@ public partial class MainWindow : Window
 {
     private const double ExpandedMinHeight = 330;
     private const double CollapsedHeight = 42;
+    private const double DefaultResultHeight = 220;
     private const int ResizeBorderThickness = 8;
     private const int HotkeyId = 0x484B;
     private const int WmHotkey = 0x0312;
@@ -37,6 +38,7 @@ public partial class MainWindow : Window
     private bool _isTranslating;
     private bool _isCollapsed;
     private double _expandedHeight;
+    private double _expandedResultHeight = DefaultResultHeight;
     private IntPtr _windowHandle;
 
     public MainWindow()
@@ -127,6 +129,7 @@ public partial class MainWindow : Window
         _isTranslating = true;
         TranslateButton.IsEnabled = false;
         StatusText.Text = "画面を取得しています…";
+        SetSourceText(null);
         TranslationText.Text = "翻訳中…";
 
         try
@@ -158,12 +161,12 @@ public partial class MainWindow : Window
                 _apiKey);
 
             _history.Add(result);
+            SetSourceText(result.SourceText);
             TranslationText.Text = string.IsNullOrWhiteSpace(result.Translation)
                 ? "翻訳結果が空でした。"
                 : result.Translation;
-            StatusText.Text = string.IsNullOrWhiteSpace(result.SourceText)
-                ? $"完了 · 履歴 {_history.Count}件"
-                : $"原文: {result.SourceText}";
+            TranslationText.ScrollToHome();
+            StatusText.Text = $"完了 · 履歴 {_history.Count}件";
         }
         catch (Exception exception)
         {
@@ -173,6 +176,7 @@ public partial class MainWindow : Window
             }
 
             StatusText.Text = "翻訳できませんでした";
+            SetSourceText(null);
             TranslationText.Text = exception.Message;
         }
         finally
@@ -199,7 +203,22 @@ public partial class MainWindow : Window
     {
         _history.Clear();
         StatusText.Text = "翻訳履歴を消去しました";
+        SetSourceText(null);
         TranslationText.Text = "翻訳結果がここに表示されます。";
+    }
+
+    private void SetSourceText(string? sourceText)
+    {
+        if (string.IsNullOrWhiteSpace(sourceText))
+        {
+            SourceText.Text = string.Empty;
+            SourcePanel.Visibility = Visibility.Collapsed;
+            return;
+        }
+
+        SourceText.Text = sourceText;
+        SourcePanel.Visibility = Visibility.Visible;
+        SourceText.ScrollToHome();
     }
 
     private void CollapseButton_Click(object sender, RoutedEventArgs e)
@@ -217,10 +236,13 @@ public partial class MainWindow : Window
     private void CollapseWindow()
     {
         _expandedHeight = Math.Max(ExpandedMinHeight, Height);
+        _expandedResultHeight = Math.Max(ResultPanel.MinHeight, ResultRow.ActualHeight);
         _isCollapsed = true;
         CaptureSurface.Visibility = Visibility.Collapsed;
+        ResultSplitter.Visibility = Visibility.Collapsed;
         ResultPanel.Visibility = Visibility.Collapsed;
         CaptureRow.Height = new GridLength(0);
+        SplitterRow.Height = new GridLength(0);
         ResultRow.Height = new GridLength(0);
         MinHeight = CollapsedHeight;
         MaxHeight = CollapsedHeight;
@@ -235,8 +257,10 @@ public partial class MainWindow : Window
         MaxHeight = double.PositiveInfinity;
         MinHeight = ExpandedMinHeight;
         CaptureRow.Height = new GridLength(1, GridUnitType.Star);
-        ResultRow.Height = new GridLength(132);
+        SplitterRow.Height = new GridLength(8);
+        ResultRow.Height = new GridLength(_expandedResultHeight);
         CaptureSurface.Visibility = Visibility.Visible;
+        ResultSplitter.Visibility = Visibility.Visible;
         ResultPanel.Visibility = Visibility.Visible;
         Height = Math.Max(ExpandedMinHeight, _expandedHeight);
         CollapseButton.Content = "たたむ";
