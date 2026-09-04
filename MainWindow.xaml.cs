@@ -10,8 +10,20 @@ namespace HonnyakuKun;
 
 public partial class MainWindow : Window
 {
+    private const double ExpandedMinHeight = 330;
+    private const double CollapsedHeight = 42;
+    private const int ResizeBorderThickness = 8;
     private const int HotkeyId = 0x484B;
     private const int WmHotkey = 0x0312;
+    private const int WmNcHitTest = 0x0084;
+    private const int HtLeft = 10;
+    private const int HtRight = 11;
+    private const int HtTop = 12;
+    private const int HtTopLeft = 13;
+    private const int HtTopRight = 14;
+    private const int HtBottom = 15;
+    private const int HtBottomLeft = 16;
+    private const int HtBottomRight = 17;
     private const uint ModControl = 0x0002;
     private const uint ModShift = 0x0004;
     private const uint VkT = 0x54;
@@ -23,6 +35,8 @@ public partial class MainWindow : Window
     private bool _apiKeyStored;
     private string? _credentialLoadError;
     private bool _isTranslating;
+    private bool _isCollapsed;
+    private double _expandedHeight;
     private IntPtr _windowHandle;
 
     public MainWindow()
@@ -50,6 +64,7 @@ public partial class MainWindow : Window
         Top = _settings.WindowTop;
         Width = Math.Max(MinWidth, _settings.WindowWidth);
         Height = Math.Max(MinHeight, _settings.WindowHeight);
+        _expandedHeight = Height;
 
         Loaded += MainWindow_Loaded;
         Closing += MainWindow_Closing;
@@ -96,9 +111,17 @@ public partial class MainWindow : Window
 
     private async Task TranslateCurrentAreaAsync()
     {
+        DismissCaptureHint();
+
         if (_isTranslating)
         {
             return;
+        }
+
+        if (_isCollapsed)
+        {
+            RestoreWindow();
+            await Dispatcher.InvokeAsync(() => { }, DispatcherPriority.Loaded);
         }
 
         _isTranslating = true;
@@ -179,6 +202,62 @@ public partial class MainWindow : Window
         TranslationText.Text = "翻訳結果がここに表示されます。";
     }
 
+    private void CollapseButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (_isCollapsed)
+        {
+            RestoreWindow();
+        }
+        else
+        {
+            CollapseWindow();
+        }
+    }
+
+    private void CollapseWindow()
+    {
+        _expandedHeight = Math.Max(ExpandedMinHeight, Height);
+        _isCollapsed = true;
+        CaptureSurface.Visibility = Visibility.Collapsed;
+        ResultPanel.Visibility = Visibility.Collapsed;
+        CaptureRow.Height = new GridLength(0);
+        ResultRow.Height = new GridLength(0);
+        MinHeight = CollapsedHeight;
+        MaxHeight = CollapsedHeight;
+        Height = CollapsedHeight;
+        CollapseButton.Content = "戻す";
+        CollapseButton.ToolTip = "翻訳領域と結果を表示する";
+    }
+
+    private void RestoreWindow()
+    {
+        _isCollapsed = false;
+        MaxHeight = double.PositiveInfinity;
+        MinHeight = ExpandedMinHeight;
+        CaptureRow.Height = new GridLength(1, GridUnitType.Star);
+        ResultRow.Height = new GridLength(132);
+        CaptureSurface.Visibility = Visibility.Visible;
+        ResultPanel.Visibility = Visibility.Visible;
+        Height = Math.Max(ExpandedMinHeight, _expandedHeight);
+        CollapseButton.Content = "たたむ";
+        CollapseButton.ToolTip = "タイトルバーだけの高さにたたむ";
+    }
+
+    private void CaptureSurface_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        DismissCaptureHint();
+
+        if (e.ChangedButton == MouseButton.Left)
+        {
+            DragMove();
+        }
+    }
+
+    private void DismissCaptureHint()
+    {
+        CaptureHintPanel.Visibility = Visibility.Collapsed;
+    }
+
     private void TitleBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {
         if (e.ChangedButton == MouseButton.Left && e.OriginalSource is not System.Windows.Controls.Button)
@@ -202,7 +281,7 @@ public partial class MainWindow : Window
         _settings.WindowLeft = Left;
         _settings.WindowTop = Top;
         _settings.WindowWidth = Width;
-        _settings.WindowHeight = Height;
+        _settings.WindowHeight = _isCollapsed ? _expandedHeight : Height;
 
         try
         {
@@ -216,6 +295,16 @@ public partial class MainWindow : Window
 
     private IntPtr WindowMessageHook(IntPtr hwnd, int message, IntPtr wParam, IntPtr lParam, ref bool handled)
     {
+        if (message == WmNcHitTest)
+        {
+            var hit = GetResizeHitTest(hwnd, lParam);
+            if (hit != 0)
+            {
+                handled = true;
+                return new IntPtr(hit);
+            }
+        }
+
         if (message == WmHotkey && wParam.ToInt32() == HotkeyId)
         {
             handled = true;
@@ -225,6 +314,65 @@ public partial class MainWindow : Window
         return IntPtr.Zero;
     }
 
+    private int GetResizeHitTest(IntPtr hwnd, IntPtr lParam)
+    {
+        if (!GetWindowRect(hwnd, out var windowRect))
+        {
+            return 0;
+        }
+
+        var screenX = unchecked((short)(long)lParam);
+        var screenY = unchecked((short)((long)lParam >> 16));
+        var border = Math.Max(1, (int)Math.Round(ResizeBorderThickness * GetDpiForWindow(hwnd) / 96d));
+        var onLeft = screenX >= windowRect.Left && screenX < windowRect.Left + border;
+        var onRight = screenX <= windowRect.Right && screenX > windowRect.Right - border;
+
+        if (_isCollapsed)
+        {
+            return onLeft ? HtLeft : onRight ? HtRight : 0;
+        }
+
+        var onTop = screenY >= windowRect.Top && screenY < windowRect.Top + border;
+        var onBottom = screenY <= windowRect.Bottom && screenY > windowRect.Bottom - border;
+
+        if (onTop && onLeft)
+        {
+            return HtTopLeft;
+        }
+
+        if (onTop && onRight)
+        {
+            return HtTopRight;
+        }
+
+        if (onBottom && onLeft)
+        {
+            return HtBottomLeft;
+        }
+
+        if (onBottom && onRight)
+        {
+            return HtBottomRight;
+        }
+
+        if (onLeft)
+        {
+            return HtLeft;
+        }
+
+        if (onRight)
+        {
+            return HtRight;
+        }
+
+        if (onTop)
+        {
+            return HtTop;
+        }
+
+        return onBottom ? HtBottom : 0;
+    }
+
     [DllImport("user32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
     private static extern bool RegisterHotKey(IntPtr windowHandle, int id, uint modifiers, uint virtualKey);
@@ -232,4 +380,20 @@ public partial class MainWindow : Window
     [DllImport("user32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
     private static extern bool UnregisterHotKey(IntPtr windowHandle, int id);
+
+    [DllImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool GetWindowRect(IntPtr windowHandle, out WindowRect windowRect);
+
+    [DllImport("user32.dll")]
+    private static extern uint GetDpiForWindow(IntPtr windowHandle);
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct WindowRect
+    {
+        public int Left;
+        public int Top;
+        public int Right;
+        public int Bottom;
+    }
 }

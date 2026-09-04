@@ -16,8 +16,8 @@
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="38" />
-                <RowDefinition Height="*" />
-                <RowDefinition Height="132" />
+                <RowDefinition x:Name="CaptureRow" Height="*" />
+                <RowDefinition x:Name="ResultRow" Height="132" />
             </Grid.RowDefinitions>
 
             <Border Grid.Row="0" Background="#E610172A" CornerRadius="6,6,0,0" MouseLeftButtonDown="TitleBar_MouseLeftButtonDown">
@@ -26,31 +26,40 @@
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="10,0,0,0">
+                    <Grid VerticalAlignment="Center" Margin="10,0,6,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
                         <Ellipse Width="8" Height="8" Fill="#22D3EE" Margin="0,0,8,0" />
-                        <TextBlock Text="翻訳くん" Foreground="White" FontWeight="SemiBold" VerticalAlignment="Center" />
-                        <TextBlock x:Name="HotkeyStatusText" Text="  Ctrl+Shift+Tで翻訳" Foreground="#94A3B8" FontSize="11" VerticalAlignment="Center" />
-                    </StackPanel>
+                        <TextBlock Grid.Column="1" Text="翻訳くん" Foreground="White" FontWeight="SemiBold" VerticalAlignment="Center" />
+                        <TextBlock x:Name="HotkeyStatusText" Grid.Column="2" Text="  Ctrl+Shift+Tで翻訳" Foreground="#94A3B8" FontSize="11"
+                                   TextTrimming="CharacterEllipsis" ToolTip="Ctrl+Shift+Tで翻訳" VerticalAlignment="Center" />
+                    </Grid>
                     <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="0,2,4,2">
                         <Button x:Name="TranslateButton" Content="翻訳" Background="#0F766E" BorderBrush="#14B8A6" Click="TranslateButton_Click" />
                         <Button Content="履歴消去" Click="ClearHistoryButton_Click" />
                         <Button Content="設定" Click="SettingsButton_Click" />
+                        <Button x:Name="CollapseButton" Content="たたむ" ToolTip="タイトルバーだけの高さにたたむ"
+                                Click="CollapseButton_Click" />
                         <Button Content="×" Width="34" Padding="0" Background="#7F1D1D" BorderBrush="#B91C1C" Click="CloseButton_Click" />
                     </StackPanel>
                 </Grid>
             </Border>
 
-            <Grid x:Name="CaptureSurface" Grid.Row="1" Background="#01000000">
+            <Grid x:Name="CaptureSurface" Grid.Row="1" Background="#01000000"
+                  PreviewMouseLeftButtonDown="CaptureSurface_PreviewMouseLeftButtonDown">
                 <Border BorderBrush="#8022D3EE" BorderThickness="1" Margin="6" CornerRadius="4" />
-                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False">
+                <StackPanel x:Name="CaptureHintPanel" HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False">
                     <TextBlock x:Name="CaptureHintText" Text="この透明領域を翻訳したい画面に重ねます"
                                Foreground="#A7CBD5E1" FontSize="14" HorizontalAlignment="Center" />
-                    <TextBlock Text="枠をドラッグして移動・右下でサイズ変更"
+                    <TextBlock Text="透明領域で移動・枠の端や角でサイズ変更"
                                Foreground="#7F94A3B8" FontSize="11" HorizontalAlignment="Center" Margin="0,5,0,0" />
                 </StackPanel>
             </Grid>
 
-            <Border Grid.Row="2" Background="#EB020617" BorderBrush="#334155" BorderThickness="0,1,0,0" CornerRadius="0,0,6,6">
+            <Border x:Name="ResultPanel" Grid.Row="2" Background="#EB020617" BorderBrush="#334155" BorderThickness="0,1,0,0" CornerRadius="0,0,6,6">
                 <Grid Margin="14,10,14,12">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
