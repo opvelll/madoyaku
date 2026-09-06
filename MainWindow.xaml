@@ -15,41 +15,13 @@
     <Border BorderBrush="#22D3EE" BorderThickness="2" CornerRadius="8" Background="#01000000">
         <Grid>
             <Grid.RowDefinitions>
-                <RowDefinition Height="38" />
                 <RowDefinition x:Name="CaptureRow" Height="*" />
                 <RowDefinition x:Name="SplitterRow" Height="8" />
                 <RowDefinition x:Name="ResultRow" Height="220" />
+                <RowDefinition x:Name="ControlRow" Height="38" />
             </Grid.RowDefinitions>
 
-            <Border Grid.Row="0" Background="#E610172A" CornerRadius="6,6,0,0" MouseLeftButtonDown="TitleBar_MouseLeftButtonDown">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-                    <Grid VerticalAlignment="Center" Margin="10,0,6,0">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-                        <Ellipse Width="8" Height="8" Fill="#22D3EE" Margin="0,0,8,0" />
-                        <TextBlock Grid.Column="1" Text="翻訳くん" Foreground="White" FontWeight="SemiBold" VerticalAlignment="Center" />
-                        <TextBlock x:Name="HotkeyStatusText" Grid.Column="2" Text="  Ctrl+Shift+Tで翻訳" Foreground="#94A3B8" FontSize="11"
-                                   TextTrimming="CharacterEllipsis" ToolTip="Ctrl+Shift+Tで翻訳" VerticalAlignment="Center" />
-                    </Grid>
-                    <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="0,2,4,2">
-                        <Button x:Name="TranslateButton" Content="翻訳" Background="#0F766E" BorderBrush="#14B8A6" Click="TranslateButton_Click" />
-                        <Button Content="履歴消去" Click="ClearHistoryButton_Click" />
-                        <Button Content="設定" Click="SettingsButton_Click" />
-                        <Button x:Name="CollapseButton" Content="たたむ" ToolTip="タイトルバーだけの高さにたたむ"
-                                Click="CollapseButton_Click" />
-                        <Button Content="×" Width="34" Padding="0" Background="#7F1D1D" BorderBrush="#B91C1C" Click="CloseButton_Click" />
-                    </StackPanel>
-                </Grid>
-            </Border>
-
-            <Grid x:Name="CaptureSurface" Grid.Row="1" Background="#01000000"
+            <Grid x:Name="CaptureSurface" Grid.Row="0" Background="#01000000"
                   PreviewMouseLeftButtonDown="CaptureSurface_PreviewMouseLeftButtonDown">
                 <Border BorderBrush="#8022D3EE" BorderThickness="1" Margin="6" CornerRadius="4" />
                 <StackPanel x:Name="CaptureHintPanel" HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False">
@@ -61,7 +33,7 @@
             </Grid>
 
             <GridSplitter x:Name="ResultSplitter"
-                          Grid.Row="2"
+                          Grid.Row="1"
                           Height="8"
                           HorizontalAlignment="Stretch"
                           VerticalAlignment="Stretch"
@@ -72,7 +44,7 @@
                           ShowsPreview="True"
                           ToolTip="ドラッグして翻訳領域の高さを変更" />
 
-            <Border x:Name="ResultPanel" Grid.Row="3" MinHeight="150" Background="#EB020617" CornerRadius="0,0,6,6">
+            <Border x:Name="ResultPanel" Grid.Row="2" MinHeight="150" Background="#EB020617">
                 <Grid Margin="14,10,14,12">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
@@ -128,6 +100,36 @@
                              Padding="0"
                              Foreground="White"
                              FontSize="20" />
+                </Grid>
+            </Border>
+
+            <Border Grid.Row="3" Background="#E610172A" CornerRadius="0,0,6,6" MouseLeftButtonDown="TitleBar_MouseLeftButtonDown">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <Grid VerticalAlignment="Center" Margin="10,0,6,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Ellipse Width="8" Height="8" Fill="#22D3EE" Margin="0,0,8,0" />
+                        <TextBlock Grid.Column="1" Text="翻訳くん" Foreground="White" FontWeight="SemiBold" VerticalAlignment="Center" />
+                        <TextBlock x:Name="HotkeyStatusText" Grid.Column="2" Text="  Ctrl+Shift+Tで翻訳" Foreground="#94A3B8" FontSize="11"
+                                   TextTrimming="CharacterEllipsis" ToolTip="Ctrl+Shift+Tで翻訳" VerticalAlignment="Center" />
+                    </Grid>
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="0,2,4,2">
+                        <Button x:Name="TranslateButton" Content="翻訳" Background="#0F766E" BorderBrush="#14B8A6" Click="TranslateButton_Click" />
+                        <Button Content="履歴消去" Click="ClearHistoryButton_Click" />
+                        <Button Content="設定" Click="SettingsButton_Click" />
+                        <Button x:Name="CollapseButton" Content="⌄" Width="30" Padding="0" FontSize="18"
+                                AutomationProperties.Name="たたむ"
+                                ToolTip="上側の翻訳領域をたたむ"
+                                Click="CollapseButton_Click" />
+                        <Button Content="×" Width="34" Padding="0" Background="#7F1D1D" BorderBrush="#B91C1C" Click="CloseButton_Click" />
+                    </StackPanel>
                 </Grid>
             </Border>
         </Grid>

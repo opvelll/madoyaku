@@ -1,5 +1,6 @@
 using System.Runtime.InteropServices;
 using System.Windows;
+using System.Windows.Automation;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Threading;
@@ -235,6 +236,7 @@ public partial class MainWindow : Window
 
     private void CollapseWindow()
     {
+        var bottom = Top + Height;
         _expandedHeight = Math.Max(ExpandedMinHeight, Height);
         _expandedResultHeight = Math.Max(ResultPanel.MinHeight, ResultRow.ActualHeight);
         _isCollapsed = true;
@@ -247,12 +249,16 @@ public partial class MainWindow : Window
         MinHeight = CollapsedHeight;
         MaxHeight = CollapsedHeight;
         Height = CollapsedHeight;
-        CollapseButton.Content = "戻す";
-        CollapseButton.ToolTip = "翻訳領域と結果を表示する";
+        Top = bottom - CollapsedHeight;
+        CollapseButton.Content = "⌃";
+        AutomationProperties.SetName(CollapseButton, "戻す");
+        CollapseButton.ToolTip = "上側の翻訳領域と結果を戻す";
     }
 
     private void RestoreWindow()
     {
+        var bottom = Top + Height;
+        var expandedHeight = Math.Max(ExpandedMinHeight, _expandedHeight);
         _isCollapsed = false;
         MaxHeight = double.PositiveInfinity;
         MinHeight = ExpandedMinHeight;
@@ -262,9 +268,11 @@ public partial class MainWindow : Window
         CaptureSurface.Visibility = Visibility.Visible;
         ResultSplitter.Visibility = Visibility.Visible;
         ResultPanel.Visibility = Visibility.Visible;
-        Height = Math.Max(ExpandedMinHeight, _expandedHeight);
-        CollapseButton.Content = "たたむ";
-        CollapseButton.ToolTip = "タイトルバーだけの高さにたたむ";
+        Height = expandedHeight;
+        Top = bottom - expandedHeight;
+        CollapseButton.Content = "⌄";
+        AutomationProperties.SetName(CollapseButton, "たたむ");
+        CollapseButton.ToolTip = "上側の翻訳領域をたたむ";
     }
 
     private void CaptureSurface_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -303,7 +311,9 @@ public partial class MainWindow : Window
         }
 
         _settings.WindowLeft = Left;
-        _settings.WindowTop = Top;
+        _settings.WindowTop = _isCollapsed
+            ? Top + CollapsedHeight - _expandedHeight
+            : Top;
         _settings.WindowWidth = Width;
         _settings.WindowHeight = _isCollapsed ? _expandedHeight : Height;
 
