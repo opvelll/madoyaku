@@ -48,46 +48,37 @@
                 <Grid Margin="14,10,14,12">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
-                    <TextBlock x:Name="StatusText" Text="準備完了" Foreground="#67E8F9" FontSize="11" Margin="0,0,0,5" />
 
                     <Border x:Name="SourcePanel"
-                            Grid.Row="1"
-                            MaxHeight="110"
-                            Margin="0,0,0,8"
-                            Padding="8,6,8,8"
+                            MaxHeight="52"
+                            Margin="0,0,0,6"
+                            Padding="8,4"
                             Background="#991E293B"
                             BorderBrush="#475569"
                             BorderThickness="1"
                             CornerRadius="4"
                             Visibility="Collapsed">
-                        <Grid>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                            </Grid.RowDefinitions>
-                            <TextBlock Text="原文" Foreground="#94A3B8" FontSize="11" Margin="0,0,0,3" />
-                            <TextBox x:Name="SourceText"
-                                     Grid.Row="1"
-                                     MaxHeight="72"
-                                     IsReadOnly="True"
-                                     IsReadOnlyCaretVisible="False"
-                                     AcceptsReturn="True"
-                                     TextWrapping="Wrap"
-                                     VerticalScrollBarVisibility="Auto"
-                                     HorizontalScrollBarVisibility="Disabled"
-                                     Background="Transparent"
-                                     BorderThickness="0"
-                                     Padding="0"
-                                     Foreground="#E2E8F0"
-                                     FontSize="14" />
-                        </Grid>
+                        <TextBox x:Name="SourceText"
+                                 AutomationProperties.Name="原文"
+                                 MinHeight="18"
+                                 MaxHeight="40"
+                                 IsReadOnly="True"
+                                 IsReadOnlyCaretVisible="False"
+                                 AcceptsReturn="True"
+                                 TextWrapping="Wrap"
+                                 VerticalScrollBarVisibility="Auto"
+                                 HorizontalScrollBarVisibility="Disabled"
+                                 Background="Transparent"
+                                 BorderThickness="0"
+                                 Padding="0"
+                                 Foreground="#E2E8F0"
+                                 FontSize="14" />
                     </Border>
 
                     <TextBox x:Name="TranslationText"
-                             Grid.Row="2"
+                             Grid.Row="1"
                              Text="翻訳結果がここに表示されます。"
                              IsReadOnly="True"
                              IsReadOnlyCaretVisible="False"
@@ -117,11 +108,15 @@
                         </Grid.ColumnDefinitions>
                         <Ellipse Width="8" Height="8" Fill="#22D3EE" Margin="0,0,8,0" />
                         <TextBlock Grid.Column="1" Text="翻訳くん" Foreground="White" FontWeight="SemiBold" VerticalAlignment="Center" />
-                        <TextBlock x:Name="HotkeyStatusText" Grid.Column="2" Text="  Ctrl+Shift+Tで翻訳" Foreground="#94A3B8" FontSize="11"
-                                   TextTrimming="CharacterEllipsis" ToolTip="Ctrl+Shift+Tで翻訳" VerticalAlignment="Center" />
+                        <TextBlock x:Name="StatusText" Grid.Column="2" Text="準備完了" Foreground="#67E8F9" FontSize="11"
+                                   Margin="12,0,0,0"
+                                   TextTrimming="CharacterEllipsis"
+                                   ToolTip="{Binding Text, RelativeSource={RelativeSource Self}}"
+                                   VerticalAlignment="Center" />
                     </Grid>
                     <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="0,2,4,2">
-                        <Button x:Name="TranslateButton" Content="翻訳" Background="#0F766E" BorderBrush="#14B8A6" Click="TranslateButton_Click" />
+                        <Button x:Name="TranslateButton" Content="翻訳" Background="#0F766E" BorderBrush="#14B8A6"
+                                ToolTip="翻訳 (Ctrl+Shift+T)" Click="TranslateButton_Click" />
                         <Button Content="履歴消去" Click="ClearHistoryButton_Click" />
                         <Button Content="設定" Click="SettingsButton_Click" />
                         <Button x:Name="CollapseButton" Content="⌄" Width="30" Padding="0" FontSize="18"

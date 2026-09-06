@@ -82,7 +82,7 @@ public partial class MainWindow : Window
 
         if (!RegisterHotKey(_windowHandle, HotkeyId, ModControl | ModShift, VkT))
         {
-            HotkeyStatusText.Text = "  ショートカット登録失敗（ボタンは使用可）";
+            StatusText.Text = "ショートカット登録失敗（ボタンは使用可）";
         }
     }
 
