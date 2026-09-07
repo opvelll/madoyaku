@@ -4,6 +4,8 @@ Windows上のゲームやアプリに透明な枠を重ね、枠内の画像をO
 
 個人開発のシンプルな試作品です。機能や使い勝手は開発途中です。
 
+[Windows x64版をダウンロード（ZIP）](https://github.com/opvelll/madoyaku/releases/latest/download/Madoyaku-win-x64.zip) · [最新版のリリース情報](https://github.com/opvelll/madoyaku/releases/latest)
+
 ![英文を翻訳範囲で囲み、原文と日本語訳を下部に表示した使用例](docs/images/translation-example.png)
 
 英文を囲んで翻訳した例です。枠の下に読み取った原文と日本語訳を表示します。
@@ -21,6 +23,8 @@ Windows上のゲームやアプリに透明な枠を重ね、枠内の画像をO
 - 設定画面からAPIキーを入力し、Windows資格情報マネージャーへ保存
 
 ## 配布版の起動
+
+上のダウンロードリンク、または[GitHub Releases](https://github.com/opvelll/madoyaku/releases/latest)のAssetsから `Madoyaku-win-x64.zip` をダウンロードしてください。`Source code (zip)` は開発用のソースコードです。配布版には.NETを同梱しているため、.NET SDKやランタイムの別途インストールは不要です。
 
 配布版はWindows x64向けのZIPです。ZIPを右クリックしてすべて展開し、展開された `Madoyaku` フォルダ内の `Madoyaku.exe` を起動してください。ZIPの中から直接起動したり、`Madoyaku.exe` だけを別の場所へ移動したりせず、同じフォルダにあるDLLと一緒に使用します。
 

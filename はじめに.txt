@@ -12,4 +12,8 @@ Madoyaku.exeだけを別の場所へ移動せず、同じフォルダにあるDL
 保存したAPIキーはWindows資格情報マネージャーに保存されます。
 翻訳にはOpenAI APIの利用料がかかります。
 
-詳細はREADME.mdを確認してください。
+詳細な使い方:
+https://github.com/opvelll/madoyaku#readme
+
+最新版のダウンロード:
+https://github.com/opvelll/madoyaku/releases/latest
