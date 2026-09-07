@@ -21,6 +21,12 @@ public sealed class OpenAiVisionClient
         string apiKey,
         CancellationToken cancellationToken = default)
     {
+        if (TestMode.IsEnabled)
+        {
+            await Task.Delay(350, cancellationToken);
+            return new TranslationHistoryItem(TestMode.SourceText, TestMode.TranslationText);
+        }
+
         if (string.IsNullOrWhiteSpace(apiKey))
         {
             throw new InvalidOperationException(

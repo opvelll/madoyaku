@@ -11,6 +11,7 @@ Windows上のゲームやアプリに透明な枠を重ね、枠内の画像をO
 - 基本プロンプト、ゲームのコンテキスト、モデル、翻訳先を編集
 - 直近の原文・訳文を次回の文脈として利用
 - ウィンドウ位置と翻訳設定を自動保存
+- 配置アイコンから、位置・サイズ・結果欄の高さを名前付きで保存・呼び出し
 - APIキーを任意でWindows資格情報マネージャーへ保存
 
 ## 起動
@@ -33,6 +34,8 @@ APIキーはアプリの「設定」から入力できます。「Windows資格�
 3. `Ctrl+Shift+T` または「翻訳」を押します。
 4. 訳文がウィンドウ下部へ表示されます。
 
+よく使うウィンドウ配置は、ツールバーの配置アイコン（▣）から「現在の配置を保存…」を選んで名前を付けて保存できます。保存済みの配置を選ぶと、位置・サイズ・結果欄の高さをまとめて復元できます。
+
 設定は `%LOCALAPPDATA%\HonnyakuKun\settings.json` に保存されます。キャプチャ画像と翻訳履歴はディスクへ保存しません。
 
 ## ビルド
@@ -46,6 +49,16 @@ dotnet build
 ```powershell
 dotnet publish -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o publish
 ```
+
+## UI確認
+
+WPFの見た目や操作を変更した場合は、PowerShellで次を実行します。
+
+```powershell
+.\scripts\Verify-Ui.ps1
+```
+
+このコマンドは確認専用の設定ディレクトリでアプリを起動し、実API通信なしで設定画面・ダミー翻訳・折りたたみ・履歴消去を操作して、実画面のPNGを `artifacts\ui-verification\<実行ID>` に保存します。`report.md` の全画像を確認した後、レポートに表示された `Complete-Verification.ps1` コマンドを実行すると、Releaseビルド、format検証、`git diff --check`、単体発行を行い、`publish\HonnyakuKun.exe` を更新します。確認モードは本番設定とWindows資格情報に触れず、APIキーを入力しません。
 
 ## 現時点の制限
 

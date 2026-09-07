@@ -1,8 +1,10 @@
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Automation;
+using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Interop;
+using System.Windows.Media;
 using System.Windows.Threading;
 using HonnyakuKun.Models;
 using HonnyakuKun.Services;
@@ -46,22 +48,33 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
         _settings = AppSettings.Load();
+        _settings.WindowLayouts ??= [];
 
         string? storedApiKey = null;
-        try
+        if (TestMode.IsEnabled)
         {
-            storedApiKey = WindowsCredentialStore.ReadApiKey();
-            _apiKeyStored = !string.IsNullOrWhiteSpace(storedApiKey);
+            _apiKey = string.Empty;
+            Topmost = true;
+            ShowActivated = true;
+            CaptureSurface.Background = new SolidColorBrush(Color.FromRgb(30, 41, 59));
         }
-        catch (Exception exception)
+        else
         {
-            _credentialLoadError = exception.Message;
-        }
+            try
+            {
+                storedApiKey = WindowsCredentialStore.ReadApiKey();
+                _apiKeyStored = !string.IsNullOrWhiteSpace(storedApiKey);
+            }
+            catch (Exception exception)
+            {
+                _credentialLoadError = exception.Message;
+            }
 
-        var environmentApiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY");
-        _apiKey = !string.IsNullOrWhiteSpace(environmentApiKey)
-            ? environmentApiKey
-            : storedApiKey ?? string.Empty;
+            var environmentApiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY");
+            _apiKey = !string.IsNullOrWhiteSpace(environmentApiKey)
+                ? environmentApiKey
+                : storedApiKey ?? string.Empty;
+        }
 
         Left = _settings.WindowLeft;
         Top = _settings.WindowTop;
@@ -92,6 +105,10 @@ public partial class MainWindow : Window
         {
             StatusText.Text = "Windows資格情報を読み込めませんでした";
             TranslationText.Text = _credentialLoadError;
+        }
+        else if (TestMode.IsEnabled)
+        {
+            StatusText.Text = "UI確認モード · API通信なし";
         }
         else if (string.IsNullOrWhiteSpace(_apiKey))
         {
@@ -147,7 +164,9 @@ public partial class MainWindow : Window
             Hide();
             await Dispatcher.InvokeAsync(() => { }, DispatcherPriority.ApplicationIdle);
             await Task.Delay(100);
-            var png = ScreenCaptureService.CapturePng(area);
+            var png = TestMode.IsEnabled
+                ? Array.Empty<byte>()
+                : ScreenCaptureService.CapturePng(area);
             Show();
 
             StatusText.Text = $"{_settings.Model} に送信しています…";
@@ -197,6 +216,175 @@ public partial class MainWindow : Window
             _apiKeyStored = dialog.RememberApiKey;
             var keyLocation = _apiKeyStored ? "Windows資格情報" : "この起動中のみ";
             StatusText.Text = $"設定を保存しました · APIキー: {keyLocation} · {_settings.Model}";
+        }
+    }
+
+    private void LayoutButton_Click(object sender, RoutedEventArgs e)
+    {
+        var menu = new ContextMenu();
+        var saveItem = new MenuItem { Header = "+ 現在の配置を保存…" };
+        saveItem.Click += (_, _) => SaveNewLayout();
+        menu.Items.Add(saveItem);
+
+        if (_settings.WindowLayouts.Count > 0)
+        {
+            menu.Items.Add(new Separator());
+            foreach (var layout in _settings.WindowLayouts)
+            {
+                menu.Items.Add(CreateLayoutMenuItem(layout));
+            }
+        }
+
+        LayoutButton.ContextMenu = menu;
+        menu.PlacementTarget = LayoutButton;
+        menu.IsOpen = true;
+    }
+
+    private MenuItem CreateLayoutMenuItem(WindowLayout layout)
+    {
+        var item = new MenuItem
+        {
+            Header = layout.Name,
+            ToolTip = "クリックで呼び出し / 右クリックで管理"
+        };
+        item.Click += (_, _) => ApplyLayout(layout);
+
+        var managementMenu = new ContextMenu();
+        var overwriteItem = new MenuItem { Header = "現在の配置で上書き" };
+        overwriteItem.Click += (_, _) => OverwriteLayout(layout);
+        managementMenu.Items.Add(overwriteItem);
+
+        var renameItem = new MenuItem { Header = "名前を変更…" };
+        renameItem.Click += (_, _) => RenameLayout(layout);
+        managementMenu.Items.Add(renameItem);
+
+        var deleteItem = new MenuItem { Header = "削除" };
+        deleteItem.Click += (_, _) => DeleteLayout(layout);
+        managementMenu.Items.Add(deleteItem);
+
+        item.ContextMenu = managementMenu;
+        return item;
+    }
+
+    private void SaveNewLayout()
+    {
+        var suggestedName = $"配置{_settings.WindowLayouts.Count + 1}";
+        var dialog = new LayoutNameWindow(suggestedName) { Owner = this };
+        if (dialog.ShowDialog() != true)
+        {
+            return;
+        }
+
+        var existing = FindLayout(dialog.LayoutName);
+        if (existing is not null &&
+            MessageBox.Show($"「{dialog.LayoutName}」を現在の配置で上書きしますか？", "配置を保存",
+                MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
+        {
+            return;
+        }
+
+        if (existing is null)
+        {
+            existing = new WindowLayout { Name = dialog.LayoutName };
+            _settings.WindowLayouts.Add(existing);
+        }
+
+        CopyCurrentLayoutTo(existing);
+        SaveLayouts("配置を保存しました");
+    }
+
+    private void OverwriteLayout(WindowLayout layout)
+    {
+        CopyCurrentLayoutTo(layout);
+        SaveLayouts($"「{layout.Name}」を更新しました");
+    }
+
+    private void RenameLayout(WindowLayout layout)
+    {
+        var dialog = new LayoutNameWindow(layout.Name) { Owner = this };
+        if (dialog.ShowDialog() != true || string.Equals(dialog.LayoutName, layout.Name, StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        var existing = FindLayout(dialog.LayoutName);
+        if (existing is not null)
+        {
+            MessageBox.Show("同じ名前の配置がすでにあります。別の名前を入力してください。", "配置名",
+                MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
+        layout.Name = dialog.LayoutName;
+        SaveLayouts("配置名を変更しました");
+    }
+
+    private void DeleteLayout(WindowLayout layout)
+    {
+        if (MessageBox.Show($"「{layout.Name}」を削除しますか？", "配置を削除",
+                MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
+        {
+            return;
+        }
+
+        _settings.WindowLayouts.Remove(layout);
+        SaveLayouts("配置を削除しました");
+    }
+
+    private WindowLayout? FindLayout(string name)
+    {
+        return _settings.WindowLayouts.FirstOrDefault(layout =>
+            string.Equals(layout.Name, name, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private void CopyCurrentLayoutTo(WindowLayout layout)
+    {
+        layout.Left = Left;
+        layout.Top = _isCollapsed ? Top + CollapsedHeight - _expandedHeight : Top;
+        layout.Width = Width;
+        layout.Height = _isCollapsed ? _expandedHeight : Height;
+        layout.ResultHeight = _isCollapsed
+            ? _expandedResultHeight
+            : Math.Max(ResultPanel.MinHeight, ResultRow.ActualHeight);
+    }
+
+    private void ApplyLayout(WindowLayout layout)
+    {
+        var width = Math.Max(MinWidth, layout.Width);
+        var height = Math.Max(ExpandedMinHeight, layout.Height);
+        var resultHeight = Math.Max(ResultPanel.MinHeight, layout.ResultHeight);
+        var maxResultHeight = Math.Max(ResultPanel.MinHeight, height - 90);
+        resultHeight = Math.Min(resultHeight, maxResultHeight);
+
+        Width = width;
+        Left = layout.Left;
+        _expandedHeight = height;
+        _expandedResultHeight = resultHeight;
+
+        if (_isCollapsed)
+        {
+            Top = layout.Top + height - CollapsedHeight;
+        }
+        else
+        {
+            Top = layout.Top;
+            Height = height;
+            ResultRow.Height = new GridLength(resultHeight);
+        }
+
+        StatusText.Text = $"「{layout.Name}」を呼び出しました";
+    }
+
+    private void SaveLayouts(string status)
+    {
+        try
+        {
+            _settings.Save();
+            StatusText.Text = status;
+        }
+        catch (Exception exception)
+        {
+            StatusText.Text = $"配置を保存できませんでした: {exception.Message}";
         }
     }
 

@@ -11,6 +11,10 @@ public sealed class AppSettings
 
     private static readonly string SettingsPath = Path.Combine(SettingsDirectory, "settings.json");
 
+    private static string EffectiveSettingsPath => TestMode.IsEnabled
+        ? Path.Combine(TestMode.DataDirectory!, "settings.json")
+        : SettingsPath;
+
     public string Model { get; set; } = "gpt-5.6-luna";
 
     public string TargetLanguage { get; set; } = "日本語";
@@ -30,16 +34,18 @@ public sealed class AppSettings
 
     public double WindowHeight { get; set; } = 520;
 
+    public List<WindowLayout> WindowLayouts { get; set; } = [];
+
     public static AppSettings Load()
     {
         try
         {
-            if (!File.Exists(SettingsPath))
+            if (!File.Exists(EffectiveSettingsPath))
             {
                 return new AppSettings();
             }
 
-            var json = File.ReadAllText(SettingsPath);
+            var json = File.ReadAllText(EffectiveSettingsPath);
             return JsonSerializer.Deserialize<AppSettings>(json) ?? new AppSettings();
         }
         catch
@@ -50,8 +56,9 @@ public sealed class AppSettings
 
     public void Save()
     {
-        Directory.CreateDirectory(SettingsDirectory);
+        var path = EffectiveSettingsPath;
+        Directory.CreateDirectory(Path.GetDirectoryName(path)!);
         var json = JsonSerializer.Serialize(this, new JsonSerializerOptions { WriteIndented = true });
-        File.WriteAllText(SettingsPath, json);
+        File.WriteAllText(path, json);
     }
 }

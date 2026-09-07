@@ -54,7 +54,11 @@ public partial class SettingsWindow : Window
         {
             _settings.Save();
 
-            if (RememberApiKey)
+            if (TestMode.IsEnabled)
+            {
+                // UI確認モードでは本番のWindows資格情報に触れない。
+            }
+            else if (RememberApiKey)
             {
                 WindowsCredentialStore.WriteApiKey(ApiKeyBox.Password);
             }
