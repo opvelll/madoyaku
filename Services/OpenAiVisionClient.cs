@@ -2,9 +2,9 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
-using HonnyakuKun.Models;
+using Madoyaku.Models;
 
-namespace HonnyakuKun.Services;
+namespace Madoyaku.Services;
 
 public sealed class OpenAiVisionClient
 {

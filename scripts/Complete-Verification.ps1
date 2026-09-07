@@ -19,24 +19,24 @@ foreach ($image in $result.images) {
     if (-not (Test-Path $image)) { throw "Verification image is missing: $image" }
 }
 
-& dotnet build (Join-Path $root "HonnyakuKun.csproj") -c Release --nologo
+& dotnet build (Join-Path $root "Madoyaku.csproj") -c Release --nologo
 if ($LASTEXITCODE -ne 0) { throw "Release build failed." }
-& dotnet format (Join-Path $root "HonnyakuKun.csproj") --verify-no-changes --no-restore
+& dotnet format (Join-Path $root "Madoyaku.csproj") --verify-no-changes --no-restore
 if ($LASTEXITCODE -ne 0) { throw "dotnet format verification failed." }
 & git -C $root diff --check
 if ($LASTEXITCODE -ne 0) { throw "git diff --check failed." }
 
 if (Test-Path $temporaryPublish) { Remove-Item -LiteralPath $temporaryPublish -Recurse -Force }
-& dotnet publish (Join-Path $root "HonnyakuKun.csproj") -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o $temporaryPublish
+& dotnet publish (Join-Path $root "Madoyaku.csproj") -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o $temporaryPublish
 if ($LASTEXITCODE -ne 0) { throw "Standalone publish failed." }
-$publishedExe = Join-Path $temporaryPublish "HonnyakuKun.exe"
+$publishedExe = Join-Path $temporaryPublish "Madoyaku.exe"
 if (-not (Test-Path $publishedExe)) { throw "Published executable was not produced." }
 
 if (-not (Test-Path $finalPublish)) { New-Item -ItemType Directory -Path $finalPublish | Out-Null }
-Copy-Item -LiteralPath $publishedExe -Destination (Join-Path $finalPublish "HonnyakuKun.exe") -Force
+Copy-Item -LiteralPath $publishedExe -Destination (Join-Path $finalPublish "Madoyaku.exe") -Force
 $smokeData = Join-Path $artifactDir "publish-smoke-data"
 New-Item -ItemType Directory -Force -Path $smokeData | Out-Null
-$smokeProcess = Start-Process -FilePath (Join-Path $finalPublish "HonnyakuKun.exe") -ArgumentList @("--ui-test", "--test-data-dir", $smokeData) -PassThru
+$smokeProcess = Start-Process -FilePath (Join-Path $finalPublish "Madoyaku.exe") -ArgumentList @("--ui-test", "--test-data-dir", $smokeData) -PassThru
 try {
     $smokeDeadline = (Get-Date).AddSeconds(15)
     do {
@@ -56,7 +56,7 @@ finally {
 }
 $result.visualReview = $VisualReview
 $result | Add-Member -NotePropertyName completedAt -NotePropertyValue (Get-Date).ToString("o") -Force
-$result | Add-Member -NotePropertyName publishedExecutable -NotePropertyValue (Join-Path $finalPublish "HonnyakuKun.exe") -Force
+$result | Add-Member -NotePropertyName publishedExecutable -NotePropertyValue (Join-Path $finalPublish "Madoyaku.exe") -Force
 $result | ConvertTo-Json -Depth 6 | Set-Content -Path $resultPath -Encoding UTF8
-Add-Content -Path $reportPath -Value "`nVisual review: Passed`nPublished executable updated: publish\HonnyakuKun.exe"
-Write-Host "Verification complete. publish\HonnyakuKun.exe was regenerated."
+Add-Content -Path $reportPath -Value "`nVisual review: Passed`nPublished executable updated: publish\Madoyaku.exe"
+Write-Host "Verification complete. publish\Madoyaku.exe was regenerated."

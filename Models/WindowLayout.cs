@@ -1,4 +1,4 @@
-namespace HonnyakuKun.Models;
+namespace Madoyaku.Models;
 
 public sealed class WindowLayout
 {

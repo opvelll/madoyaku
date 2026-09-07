@@ -1,6 +1,6 @@
 using System.Windows;
 
-namespace HonnyakuKun;
+namespace Madoyaku;
 
 public partial class App : Application
 {
@@ -12,7 +12,7 @@ public partial class App : Application
         }
         catch (Exception exception)
         {
-            MessageBox.Show(exception.Message, "翻訳くん", MessageBoxButton.OK, MessageBoxImage.Error);
+            MessageBox.Show(exception.Message, "窓訳", MessageBoxButton.OK, MessageBoxImage.Error);
             Shutdown(2);
             return;
         }

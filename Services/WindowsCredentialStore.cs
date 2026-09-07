@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
 using System.Text;
 
-namespace HonnyakuKun.Services;
+namespace Madoyaku.Services;
 
 public static class WindowsCredentialStore
 {

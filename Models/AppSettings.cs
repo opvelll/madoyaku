@@ -1,7 +1,7 @@
 using System.IO;
 using System.Text.Json;
 
-namespace HonnyakuKun.Models;
+namespace Madoyaku.Models;
 
 public sealed class AppSettings
 {

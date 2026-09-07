@@ -6,10 +6,10 @@ using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Threading;
-using HonnyakuKun.Models;
-using HonnyakuKun.Services;
+using Madoyaku.Models;
+using Madoyaku.Services;
 
-namespace HonnyakuKun;
+namespace Madoyaku;
 
 public partial class MainWindow : Window
 {

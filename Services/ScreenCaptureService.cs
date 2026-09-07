@@ -5,7 +5,7 @@ using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
-namespace HonnyakuKun.Services;
+namespace Madoyaku.Services;
 
 public static class ScreenCaptureService
 {

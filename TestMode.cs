@@ -1,6 +1,6 @@
 using System.IO;
 
-namespace HonnyakuKun;
+namespace Madoyaku;
 
 public static class TestMode
 {

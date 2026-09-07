@@ -12,8 +12,8 @@ $logPath = Join-Path $artifactRoot "run.log"
 $buildLogPath = Join-Path $artifactRoot "build.log"
 $reportPath = Join-Path $artifactRoot "report.md"
 $resultPath = Join-Path $artifactRoot "result.json"
-$project = Join-Path $root "HonnyakuKun.csproj"
-$exe = Join-Path $root "bin\Release\net10.0-windows\HonnyakuKun.exe"
+$project = Join-Path $root "Madoyaku.csproj"
+$exe = Join-Path $root "bin\Release\net10.0-windows\Madoyaku.exe"
 $process = $null
 $steps = [System.Collections.Generic.List[object]]::new()
 
@@ -107,13 +107,13 @@ public static class UiCapture {
 "@
 
 try {
-    $existingTestProcess = Get-CimInstance Win32_Process -Filter "Name='HonnyakuKun.exe'" -ErrorAction SilentlyContinue |
+    $existingTestProcess = Get-CimInstance Win32_Process -Filter "Name='Madoyaku.exe'" -ErrorAction SilentlyContinue |
         Where-Object { $_.CommandLine -match "--ui-test" }
     if ($existingTestProcess) {
         throw "A previous UI test instance is already running. Close it before UI verification."
     }
-    if (Get-Process -Name HonnyakuKun -ErrorAction SilentlyContinue) {
-        Write-Warning "A normal HonnyakuKun instance is already running; it will not be touched."
+    if (Get-Process -Name Madoyaku -ErrorAction SilentlyContinue) {
+        Write-Warning "A normal Madoyaku instance is already running; it will not be touched."
     }
 
     & dotnet build $project -c Release -warnaserror --nologo | Tee-Object -FilePath $buildLogPath

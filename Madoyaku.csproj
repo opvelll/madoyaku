@@ -6,8 +6,8 @@
     <UseWPF>true</UseWPF>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <AssemblyName>HonnyakuKun</AssemblyName>
-    <RootNamespace>HonnyakuKun</RootNamespace>
+    <AssemblyName>Madoyaku</AssemblyName>
+    <RootNamespace>Madoyaku</RootNamespace>
   </PropertyGroup>
 
 </Project>

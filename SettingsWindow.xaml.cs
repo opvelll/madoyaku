@@ -1,9 +1,9 @@
 using System.Windows;
 using System.Windows.Controls;
-using HonnyakuKun.Models;
-using HonnyakuKun.Services;
+using Madoyaku.Models;
+using Madoyaku.Services;
 
-namespace HonnyakuKun;
+namespace Madoyaku;
 
 public partial class SettingsWindow : Window
 {

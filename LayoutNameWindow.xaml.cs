@@ -1,7 +1,7 @@
 using System.Windows;
 using System.Windows.Input;
 
-namespace HonnyakuKun;
+namespace Madoyaku;
 
 public partial class LayoutNameWindow : Window
 {
