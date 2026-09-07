@@ -8,7 +8,6 @@ $root = Split-Path -Parent $PSScriptRoot
 $artifactDir = Join-Path $root "artifacts\ui-verification\$RunId"
 $resultPath = Join-Path $artifactDir "result.json"
 $reportPath = Join-Path $artifactDir "report.md"
-$temporaryPublish = Join-Path $artifactDir "publish"
 $finalPublish = Join-Path $root "publish"
 
 if (-not (Test-Path $resultPath)) { throw "Verification result not found: $resultPath" }
@@ -26,37 +25,17 @@ if ($LASTEXITCODE -ne 0) { throw "dotnet format verification failed." }
 & git -C $root diff --check
 if ($LASTEXITCODE -ne 0) { throw "git diff --check failed." }
 
-if (Test-Path $temporaryPublish) { Remove-Item -LiteralPath $temporaryPublish -Recurse -Force }
-& dotnet publish (Join-Path $root "Madoyaku.csproj") -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o $temporaryPublish
-if ($LASTEXITCODE -ne 0) { throw "Standalone publish failed." }
-$publishedExe = Join-Path $temporaryPublish "Madoyaku.exe"
-if (-not (Test-Path $publishedExe)) { throw "Published executable was not produced." }
-
-if (-not (Test-Path $finalPublish)) { New-Item -ItemType Directory -Path $finalPublish | Out-Null }
-Copy-Item -LiteralPath $publishedExe -Destination (Join-Path $finalPublish "Madoyaku.exe") -Force
 $smokeData = Join-Path $artifactDir "publish-smoke-data"
-New-Item -ItemType Directory -Force -Path $smokeData | Out-Null
-$smokeProcess = Start-Process -FilePath (Join-Path $finalPublish "Madoyaku.exe") -ArgumentList @("--ui-test", "--test-data-dir", $smokeData) -PassThru
-try {
-    $smokeDeadline = (Get-Date).AddSeconds(15)
-    do {
-        $smokeProcess.Refresh()
-        if ($smokeProcess.MainWindowHandle -ne [IntPtr]::Zero) { break }
-        Start-Sleep -Milliseconds 200
-    } while ((Get-Date) -lt $smokeDeadline)
-    if ($smokeProcess.MainWindowHandle -eq [IntPtr]::Zero) {
-        throw "Published executable did not create a window."
-    }
-}
-finally {
-    if ($null -ne $smokeProcess -and -not $smokeProcess.HasExited) {
-        $smokeProcess.CloseMainWindow() | Out-Null
-        if (-not $smokeProcess.WaitForExit(5000)) { $smokeProcess.Kill() }
-    }
-}
+& (Join-Path $root "scripts\Publish-App.ps1") -OutputRoot $finalPublish -SkipValidation -SmokeDataDirectory $smokeData
+if ($LASTEXITCODE -ne 0) { throw "Standalone publish failed." }
+$publishedExe = Join-Path $finalPublish "Madoyaku\Madoyaku.exe"
+$publishedZip = Join-Path $finalPublish "Madoyaku-win-x64.zip"
+if (-not (Test-Path $publishedExe)) { throw "Published executable was not produced." }
+if (-not (Test-Path $publishedZip)) { throw "Published ZIP was not produced." }
 $result.visualReview = $VisualReview
 $result | Add-Member -NotePropertyName completedAt -NotePropertyValue (Get-Date).ToString("o") -Force
-$result | Add-Member -NotePropertyName publishedExecutable -NotePropertyValue (Join-Path $finalPublish "Madoyaku.exe") -Force
+$result | Add-Member -NotePropertyName publishedExecutable -NotePropertyValue $publishedExe -Force
+$result | Add-Member -NotePropertyName publishedZip -NotePropertyValue $publishedZip -Force
 $result | ConvertTo-Json -Depth 6 | Set-Content -Path $resultPath -Encoding UTF8
-Add-Content -Path $reportPath -Value "`nVisual review: Passed`nPublished executable updated: publish\Madoyaku.exe"
-Write-Host "Verification complete. publish\Madoyaku.exe was regenerated."
+Add-Content -Path $reportPath -Value "`nVisual review: Passed`nPublished executable updated: publish\Madoyaku\Madoyaku.exe`nPublished ZIP updated: publish\Madoyaku-win-x64.zip"
+Write-Host "Verification complete. publish\Madoyaku\Madoyaku.exe and publish\Madoyaku-win-x64.zip were regenerated."
