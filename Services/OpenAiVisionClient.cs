@@ -41,10 +41,10 @@ public sealed class OpenAiVisionClient
         var userText = $$"""
             翻訳先: {{settings.TargetLanguage}}
 
-            ゲーム・人物・用語の設定:
+            ゲーム・人物・用語の補足情報:
             {{(string.IsNullOrWhiteSpace(settings.GameContext) ? "（指定なし）" : settings.GameContext)}}
 
-            直近の翻訳履歴:
+            次の翻訳に使う過去の翻訳:
             {{historyText}}
 
             添付画像の透明枠内に表示されていた、翻訳対象の台詞または文章を読み取ってください。

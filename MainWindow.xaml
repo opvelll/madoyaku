@@ -118,10 +118,12 @@
                     <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="0,2,4,2">
                         <Button x:Name="TranslateButton" AutomationProperties.AutomationId="TranslateButton" Content="翻訳" Background="#0F766E" BorderBrush="#14B8A6"
                                 ToolTip="翻訳 (Ctrl+Shift+T)" Click="TranslateButton_Click" />
-                        <Button AutomationProperties.AutomationId="ClearHistoryButton" Content="履歴消去" Click="ClearHistoryButton_Click" />
+                        <Button x:Name="ClearHistoryButton" AutomationProperties.AutomationId="ClearHistoryButton" Content="過去の翻訳をリセット"
+                                ToolTip="次回の翻訳に使う過去の翻訳を消去します。表示中の結果と補足情報は残ります。"
+                                Click="ClearHistoryButton_Click" />
                         <Button x:Name="LayoutButton" AutomationProperties.AutomationId="LayoutButton" AutomationProperties.Name="配置"
                                 Content="▣" Width="32" Padding="0" FontSize="16" ToolTip="配置" Click="LayoutButton_Click" />
-                        <Button AutomationProperties.AutomationId="SettingsButton" Content="設定" Click="SettingsButton_Click" />
+                        <Button x:Name="SettingsButton" AutomationProperties.AutomationId="SettingsButton" Content="設定" Click="SettingsButton_Click" />
                         <Button x:Name="CollapseButton" AutomationProperties.AutomationId="CollapseButton" Content="⌄" Width="30" Padding="0" FontSize="18"
                                 AutomationProperties.Name="たたむ"
                                 ToolTip="上側の翻訳領域をたたむ"

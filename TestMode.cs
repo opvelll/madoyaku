@@ -8,7 +8,7 @@ public static class TestMode
 
     public static string? DataDirectory { get; private set; }
 
-    public static string SourceText => "これはUI確認用の長い原文です。折り返し、スクロール、履歴表示を確認できます。";
+    public static string SourceText => "これはUI確認用の長い原文です。折り返し、スクロール、過去の翻訳の文脈表示を確認できます。";
 
     public static string TranslationText => "これはUI確認用の翻訳結果です。設定保存、処理中表示、結果領域の読みやすさを確認できます。";
 

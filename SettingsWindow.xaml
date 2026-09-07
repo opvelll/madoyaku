@@ -51,9 +51,11 @@
         </Grid>
 
         <StackPanel Grid.Row="2" Margin="0,0,0,14">
-            <TextBlock Text="保持する履歴数" Margin="0,0,0,5" />
+            <TextBlock Text="翻訳に使う過去の翻訳数" Margin="0,0,0,5" />
             <TextBox x:Name="HistoryLimitBox" AutomationProperties.AutomationId="HistoryLimitBox" Width="100" HorizontalAlignment="Left" Padding="8"
                      Background="#1E293B" Foreground="White" BorderBrush="#475569" />
+            <TextBlock Margin="0,5,0,0" Foreground="#94A3B8" FontSize="11" TextWrapping="Wrap"
+                       Text="原文と訳文の組を1件として、直近の指定件数を次の翻訳に使います。0件では保持・送信しません。" />
         </StackPanel>
 
         <StackPanel Grid.Row="3" Margin="0,0,0,14">
@@ -63,9 +65,11 @@
         </StackPanel>
 
         <StackPanel Grid.Row="4" Margin="0,0,0,14">
-            <TextBlock Text="ゲーム・人物・用語などのコンテキスト" Margin="0,0,0,5" />
+            <TextBlock Text="ゲーム・人物・用語の補足情報" Margin="0,0,0,5" />
             <TextBox x:Name="GameContextBox" AutomationProperties.AutomationId="GameContextBox" AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"
                      Padding="9" Background="#1E293B" Foreground="White" BorderBrush="#475569" />
+            <TextBlock Margin="0,5,0,0" Foreground="#94A3B8" FontSize="11" TextWrapping="Wrap"
+                       Text="毎回の翻訳に送る手入力の情報です。「過去の翻訳をリセット」では消えません。" />
         </StackPanel>
 
         <TextBlock Grid.Row="5" x:Name="ValidationText" AutomationProperties.AutomationId="ValidationText" Foreground="#FCA5A5" Margin="0,0,0,8" />

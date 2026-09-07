@@ -145,7 +145,7 @@ public partial class MainWindow : Window
         }
 
         _isTranslating = true;
-        TranslateButton.IsEnabled = false;
+        SetTranslationControlsEnabled(false);
         StatusText.Text = "画面を取得しています…";
         SetSourceText(null);
         TranslationText.Text = "翻訳中…";
@@ -180,13 +180,18 @@ public partial class MainWindow : Window
                 relevantHistory,
                 _apiKey);
 
-            _history.Add(result);
+            if (_settings.HistoryLimit > 0)
+            {
+                _history.Add(result);
+                TrimHistory();
+            }
+
             SetSourceText(result.SourceText);
             TranslationText.Text = string.IsNullOrWhiteSpace(result.Translation)
                 ? "翻訳結果が空でした。"
                 : result.Translation;
             TranslationText.ScrollToHome();
-            StatusText.Text = $"完了 · 履歴 {_history.Count}件";
+            StatusText.Text = $"完了 · {GetHistoryStatusText()}";
         }
         catch (Exception exception)
         {
@@ -202,20 +207,26 @@ public partial class MainWindow : Window
         finally
         {
             _isTranslating = false;
-            TranslateButton.IsEnabled = true;
+            SetTranslationControlsEnabled(true);
             Topmost = true;
         }
     }
 
     private void SettingsButton_Click(object sender, RoutedEventArgs e)
     {
+        if (_isTranslating)
+        {
+            return;
+        }
+
         var dialog = new SettingsWindow(_settings, _apiKey, _apiKeyStored) { Owner = this };
         if (dialog.ShowDialog() == true)
         {
+            TrimHistory();
             _apiKey = dialog.ApiKey;
             _apiKeyStored = dialog.RememberApiKey;
             var keyLocation = _apiKeyStored ? "Windows資格情報" : "この起動中のみ";
-            StatusText.Text = $"設定を保存しました · APIキー: {keyLocation} · {_settings.Model}";
+            StatusText.Text = $"設定を保存しました · {GetHistoryStatusText()} · APIキー: {keyLocation} · {_settings.Model}";
         }
     }
 
@@ -390,10 +401,42 @@ public partial class MainWindow : Window
 
     private void ClearHistoryButton_Click(object sender, RoutedEventArgs e)
     {
+        if (_isTranslating)
+        {
+            return;
+        }
+
         _history.Clear();
-        StatusText.Text = "翻訳履歴を消去しました";
-        SetSourceText(null);
-        TranslationText.Text = "翻訳結果がここに表示されます。";
+        StatusText.Text = "過去の翻訳をリセットしました · 次回に使う過去の翻訳 0件";
+    }
+
+    private void TrimHistory()
+    {
+        var historyLimit = Math.Clamp(_settings.HistoryLimit, 0, 50);
+        if (historyLimit == 0)
+        {
+            _history.Clear();
+            return;
+        }
+
+        if (_history.Count > historyLimit)
+        {
+            _history.RemoveRange(0, _history.Count - historyLimit);
+        }
+    }
+
+    private string GetHistoryStatusText()
+    {
+        return _settings.HistoryLimit <= 0
+            ? "過去の翻訳を使わない"
+            : $"次回に使う過去の翻訳 {_history.Count}件";
+    }
+
+    private void SetTranslationControlsEnabled(bool isEnabled)
+    {
+        TranslateButton.IsEnabled = isEnabled;
+        ClearHistoryButton.IsEnabled = isEnabled;
+        SettingsButton.IsEnabled = isEnabled;
     }
 
     private void SetSourceText(string? sourceText)

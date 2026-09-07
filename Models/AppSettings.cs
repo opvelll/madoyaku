@@ -46,7 +46,9 @@ public sealed class AppSettings
             }
 
             var json = File.ReadAllText(EffectiveSettingsPath);
-            return JsonSerializer.Deserialize<AppSettings>(json) ?? new AppSettings();
+            var settings = JsonSerializer.Deserialize<AppSettings>(json) ?? new AppSettings();
+            settings.HistoryLimit = Math.Clamp(settings.HistoryLimit, 0, 50);
+            return settings;
         }
         catch
         {
@@ -56,6 +58,7 @@ public sealed class AppSettings
 
     public void Save()
     {
+        HistoryLimit = Math.Clamp(HistoryLimit, 0, 50);
         var path = EffectiveSettingsPath;
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
         var json = JsonSerializer.Serialize(this, new JsonSerializerOptions { WriteIndented = true });

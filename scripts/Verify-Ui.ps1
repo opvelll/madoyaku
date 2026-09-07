@@ -178,6 +178,14 @@ try {
     Add-Step "settings-cancel" $true "Cancel discarded an unsaved edit."
 
     Invoke-Element (Wait-Element $main "TranslateButton")
+    Start-Sleep -Milliseconds 100
+    if ((Wait-Element $main "ClearHistoryButton").Current.IsEnabled) {
+        throw "Clear history control remained enabled while translation was in progress."
+    }
+    if ((Wait-Element $main "SettingsButton").Current.IsEnabled) {
+        throw "Settings control remained enabled while translation was in progress."
+    }
+    Add-Step "translation-controls" $true "Settings and history reset controls were disabled during translation."
     Start-Sleep -Milliseconds 900
     $images.Add((Save-WindowImage $process.MainWindowHandle "07-translation-result"))
     Add-Step "translation" $true "Deterministic test translation completed without network access."
@@ -192,8 +200,14 @@ try {
 
     Invoke-Element (Wait-Element $main "ClearHistoryButton")
     Start-Sleep -Milliseconds 200
-    $images.Add((Save-WindowImage $process.MainWindowHandle "10-history-cleared"))
-    Add-Step "history-clear" $true "History cleared and initial result state captured."
+    $sourceAfterReset = Get-ElementValue (Wait-Element $main "SourceText")
+    $translationAfterReset = Get-ElementValue (Wait-Element $main "TranslationText")
+    if ([string]::IsNullOrWhiteSpace($sourceAfterReset) -or
+        $translationAfterReset -ne "これはUI確認用の翻訳結果です。設定保存、処理中表示、結果領域の読みやすさを確認できます。") {
+        throw "History reset unexpectedly cleared the visible translation result."
+    }
+    $images.Add((Save-WindowImage $process.MainWindowHandle "10-history-reset"))
+    Add-Step "history-reset" $true "Past translations were cleared while the visible result remained."
 
     $result = [pscustomobject]@{
         runId = $runId; passed = $true; visualReview = "Pending"; steps = $steps; images = $images

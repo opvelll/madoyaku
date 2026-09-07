@@ -38,7 +38,7 @@ public partial class SettingsWindow : Window
 
         if (!int.TryParse(HistoryLimitBox.Text, out var historyLimit) || historyLimit is < 0 or > 50)
         {
-            ValidationText.Text = "履歴数は0～50で入力してください。";
+            ValidationText.Text = "過去の翻訳数は0～50で入力してください。";
             return;
         }
 
